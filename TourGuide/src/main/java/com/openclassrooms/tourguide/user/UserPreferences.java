@@ -7,23 +7,20 @@ public class UserPreferences {
 	private int ticketQuantity = 1;
 	private int numberOfAdults = 1;
 	private int numberOfChildren = 0;
-	
-	public UserPreferences() {
-	}
-	
-	public void setAttractionProximity(int attractionProximity) {
-		this.attractionProximity = attractionProximity;
-	}
-	
+
 	public int getAttractionProximity() {
 		return attractionProximity;
+	}
+
+	public void setAttractionProximity(final int attractionProximity) {
+		this.attractionProximity = attractionProximity;
 	}
 	
 	public int getTripDuration() {
 		return tripDuration;
 	}
 
-	public void setTripDuration(int tripDuration) {
+	public void setTripDuration(final int tripDuration) {
 		this.tripDuration = tripDuration;
 	}
 
@@ -31,7 +28,7 @@ public class UserPreferences {
 		return ticketQuantity;
 	}
 
-	public void setTicketQuantity(int ticketQuantity) {
+	public void setTicketQuantity(final int ticketQuantity) {
 		this.ticketQuantity = ticketQuantity;
 	}
 	
@@ -39,7 +36,7 @@ public class UserPreferences {
 		return numberOfAdults;
 	}
 
-	public void setNumberOfAdults(int numberOfAdults) {
+	public void setNumberOfAdults(final int numberOfAdults) {
 		this.numberOfAdults = numberOfAdults;
 	}
 
@@ -47,8 +44,7 @@ public class UserPreferences {
 		return numberOfChildren;
 	}
 
-	public void setNumberOfChildren(int numberOfChildren) {
+	public void setNumberOfChildren(final int numberOfChildren) {
 		this.numberOfChildren = numberOfChildren;
 	}
-
 }

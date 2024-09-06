@@ -19,16 +19,20 @@ import tripPricer.Provider;
 @RestController
 public class TourGuideController {
 
-	@Autowired
-	TourGuideService tourGuideService;
-	
+    private final TourGuideService tourGuideService;
+
+    @Autowired
+    public TourGuideController(final TourGuideService tourGuideService) {
+        this.tourGuideService = tourGuideService;
+    }
+
     @RequestMapping("/")
     public String index() {
         return "Greetings from TourGuide!";
     }
     
     @RequestMapping("/getLocation") 
-    public VisitedLocation getLocation(@RequestParam String userName) {
+    public VisitedLocation getLocation(@RequestParam final String userName) {
     	return tourGuideService.getUserLocation(getUser(userName));
     }
     
@@ -42,24 +46,27 @@ public class TourGuideController {
         // The reward points for visiting each Attraction.
         //    Note: Attraction reward points can be gathered from RewardsCentral
     @RequestMapping("/getNearbyAttractions") 
-    public List<Attraction> getNearbyAttractions(@RequestParam String userName) {
+    public List<Attraction> getNearbyAttractions(@RequestParam final String userName) {
     	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
     	return tourGuideService.getNearByAttractions(visitedLocation);
     }
     
     @RequestMapping("/getRewards") 
-    public List<UserReward> getRewards(@RequestParam String userName) {
+    public List<UserReward> getRewards(@RequestParam final String userName) {
     	return tourGuideService.getUserRewards(getUser(userName));
     }
        
     @RequestMapping("/getTripDeals")
-    public List<Provider> getTripDeals(@RequestParam String userName) {
+    public List<Provider> getTripDeals(@RequestParam final String userName) {
     	return tourGuideService.getTripDeals(getUser(userName));
     }
-    
-    private User getUser(String userName) {
+
+    /**
+     * Get user by name
+     * @param userName user name
+     * @return user
+     */
+    private User getUser(final String userName) {
     	return tourGuideService.getUser(userName);
     }
-   
-
 }

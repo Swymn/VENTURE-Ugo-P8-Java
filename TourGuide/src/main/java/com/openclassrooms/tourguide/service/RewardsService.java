@@ -1,6 +1,8 @@
 package com.openclassrooms.tourguide.service;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Service;
 
@@ -18,7 +20,7 @@ public class RewardsService {
 	private static final int NAUTICAL_COEF = 60;
 
 	// proximity in miles
-    private int defaultProximityBuffer = 10;
+    private final int defaultProximityBuffer = 10;
 	private int proximityBuffer = defaultProximityBuffer;
 	private int attractionProximityRange = 200;
 	private final GpsUtil gpsUtil;
@@ -38,17 +40,31 @@ public class RewardsService {
 	}
 	
 	public void calculateRewards(final User user) {
-		List<VisitedLocation> userLocations = user.getVisitedLocations();
-		List<Attraction> attractions = gpsUtil.getAttractions();
-		
-		for(VisitedLocation visitedLocation : userLocations) {
-			for(Attraction attraction : attractions) {
-				if(user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
-					if(nearAttraction(visitedLocation, attraction)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+		final List<VisitedLocation> userLocations = user.getVisitedLocations();
+		final List<Attraction> attractions = gpsUtil.getAttractions();
+
+		final var executorService = Executors.newFixedThreadPool(10);
+
+		for (final var visitedLocation : userLocations) {
+			for (final var  attraction : attractions) {
+				executorService.submit(() -> {
+					if (user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
+						if (nearAttraction(visitedLocation, attraction)) {
+							user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+						}
 					}
-				}
+				});
 			}
+		}
+
+		executorService.shutdown();
+		try {
+			if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+				executorService.shutdownNow();
+			}
+		} catch (InterruptedException e) {
+			executorService.shutdownNow();
+			Thread.currentThread().interrupt();
 		}
 	}
 	

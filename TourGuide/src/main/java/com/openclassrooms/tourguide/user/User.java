@@ -59,7 +59,7 @@ public class User {
 		this.latestLocationTimestamp = latestLocationTimestamp;
 	}
 
-	public List<VisitedLocation> getVisitedLocations() {
+	public synchronized List<VisitedLocation> getVisitedLocations() {
 		return visitedLocations;
 	}
 
@@ -80,7 +80,7 @@ public class User {
 	}
 
 	public void addUserReward(final UserReward userReward) {
-		if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
+		if (userRewards.stream().noneMatch(r -> r.attraction.attractionName.equals(userReward.attraction.attractionName))) {
 			userRewards.add(userReward);
 		}
 	}

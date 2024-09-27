@@ -1,5 +1,6 @@
 package com.openclassrooms.tourguide;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ public class TourGuideController {
     @RequestMapping("/getNearbyAttractions") 
     public List<Attraction> getNearbyAttractions(@RequestParam final String userName) {
     	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
-    	return tourGuideService.getNearByAttractions(visitedLocation);
+    	return Collections.emptyList();
     }
     
     @RequestMapping("/getRewards") 

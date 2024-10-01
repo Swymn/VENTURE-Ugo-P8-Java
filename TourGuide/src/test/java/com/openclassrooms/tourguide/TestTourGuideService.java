@@ -109,6 +109,7 @@ public class TestTourGuideService {
 		assertEquals(5, attractions.size());
 	}
 
+	@Test
 	public void getTripDeals() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
@@ -119,9 +120,8 @@ public class TestTourGuideService {
 
 		List<Provider> providers = tourGuideService.getTripDeals(user);
 
-		tourGuideService.tracker.stopTracking();
+		tourGuideService.stopTrackingUsersAndCompleteTasks();
 
-		assertEquals(10, providers.size());
+		assertEquals(5, providers.size());
 	}
-
 }

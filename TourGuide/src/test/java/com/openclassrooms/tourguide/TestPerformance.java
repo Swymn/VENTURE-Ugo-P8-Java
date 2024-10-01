@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.Disabled;
@@ -45,7 +45,6 @@ public class TestPerformance {
 	 * TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
 	 */
 
-	@Disabled
 	@Test
 	public void highVolumeTrackLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -60,11 +59,29 @@ public class TestPerformance {
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
+
+		ExecutorService executorService = Executors.newFixedThreadPool(10);
+		List<Future<?>> futures = new ArrayList<>();
+
+		for (User user : allUsers) {
+			futures.add(executorService.submit(() -> tourGuideService.trackUserLocation(user)));
+		}
+
+		for (Future<?> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				System.err.println("Error submitting task: " + e.getMessage());
+			}
+		}
+
+
 		for (User user : allUsers) {
 			tourGuideService.trackUserLocation(user);
 		}
 		stopWatch.stop();
 		tourGuideService.tracker.stopTracking();
+		executorService.shutdown();
 
 		System.out.println("highVolumeTrackLocation: Time Elapsed: "
 				+ TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");

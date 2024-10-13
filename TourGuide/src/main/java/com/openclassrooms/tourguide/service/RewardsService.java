@@ -18,10 +18,10 @@ import com.openclassrooms.tourguide.user.UserReward;
 public class RewardsService {
 	private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
 	private static final int NAUTICAL_COEF = 60;
+    private static final int DEFAULT_PROXIMITY_BUFFER = 10;
 
 	// proximity in miles
-    private final int defaultProximityBuffer = 10;
-	private int proximityBuffer = defaultProximityBuffer;
+	private int proximityBuffer = DEFAULT_PROXIMITY_BUFFER;
 	private int attractionProximityRange = 200;
 	private final GpsUtil gpsUtil;
 	private final RewardCentral rewardsCentral;
@@ -35,8 +35,8 @@ public class RewardsService {
 		this.proximityBuffer = proximityBuffer;
 	}
 	
-	public void setDefaultProximityBuffer() {
-		proximityBuffer = defaultProximityBuffer;
+	public void setProximityBuffer() {
+		proximityBuffer = DEFAULT_PROXIMITY_BUFFER;
 	}
 	
 	public void calculateRewards(final User user) {
@@ -48,11 +48,10 @@ public class RewardsService {
 		for (final var visitedLocation : userLocations) {
 			for (final var  attraction : attractions) {
 				executorService.submit(() -> {
-					if (user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
-						if (nearAttraction(visitedLocation, attraction)) {
+					if (user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName)) && nearAttraction(visitedLocation, attraction)) {
 							user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
 						}
-					}
+					
 				});
 			}
 		}
@@ -69,11 +68,11 @@ public class RewardsService {
 	}
 	
 	public boolean isWithinAttractionProximity(final Attraction attraction, final Location location) {
-		return !(getDistance(attraction, location) > attractionProximityRange);
+		return getDistance(attraction, location) <= attractionProximityRange;
 	}
 	
 	private boolean nearAttraction(final VisitedLocation visitedLocation, final Attraction attraction) {
-		return !(getDistance(attraction, visitedLocation.location) > proximityBuffer);
+		return getDistance(attraction, visitedLocation.location) <= proximityBuffer;
 	}
 	
 	public int getRewardPoints(final Attraction attraction, final User user) {
@@ -90,8 +89,7 @@ public class RewardsService {
                                + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));
 
         final var nauticalMiles = NAUTICAL_COEF * Math.toDegrees(angle);
-        final var statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
-        return statuteMiles;
+        return STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
 	}
 
 }

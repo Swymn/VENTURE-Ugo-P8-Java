@@ -79,7 +79,7 @@ public class TourGuideService {
 
     public List<Provider> getTripDeals(final User user) {
         final var cumulatativeRewardPoints = user.getUserRewards().stream().mapToInt(UserReward::getRewardPoints).sum();
-        final List<Provider> providers = tripPricer.getPrice(tripPricerApiKey, user.getUserId(),
+        final List<Provider> providers = tripPricer.getPrice(TRIP_PARCER_API_KEY, user.getUserId(),
                 user.getUserPreferences().getNumberOfAdults(), user.getUserPreferences().getNumberOfChildren(),
                 user.getUserPreferences().getTripDuration(), cumulatativeRewardPoints);
         user.setTripDeals(providers);
@@ -101,6 +101,7 @@ public class TourGuideService {
 
     private void addShutDownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
             public void run() {
                 tracker.stopTracking();
             }
@@ -112,10 +113,11 @@ public class TourGuideService {
      * Methods Below: For Internal Testing
      *
      **********************************************************************************/
-    private static final String tripPricerApiKey = "test-server-api-key";
+    private static final String TRIP_PARCER_API_KEY = "test-server-api-key";
     // Database connection will be used for external users, but for testing purposes
     // internal users are provided and stored in memory
     private final Map<String, User> internalUserMap = new HashMap<>();
+    private final Random random = new Random();
 
     private void initializeInternalUsers() {
         IntStream.range(0, InternalTestHelper.getInternalUserNumber()).forEach(i -> {
@@ -131,26 +133,26 @@ public class TourGuideService {
     }
 
     private void generateUserLocationHistory(User user) {
-        IntStream.range(0, 3).forEach(i -> {
+        IntStream.range(0, 3).forEach(i -> 
             user.addToVisitedLocations(new VisitedLocation(user.getUserId(),
-                    new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
-        });
+                    new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()))
+        );
     }
 
     private double generateRandomLongitude() {
         final var leftLimit = -180;
         final var rightLimit = 180;
-        return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
+        return leftLimit + random.nextDouble() * (rightLimit - leftLimit);
     }
 
     private double generateRandomLatitude() {
         double leftLimit = -85.05112878;
         double rightLimit = 85.05112878;
-        return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
+        return leftLimit + random.nextDouble() * (rightLimit - leftLimit);
     }
 
     private Date getRandomTime() {
-        final var localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
+        final var localDateTime = LocalDateTime.now().minusDays(random.nextInt(30));
         return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
     }
 
@@ -163,6 +165,7 @@ public class TourGuideService {
             try {
                 if (executorService.awaitTermination(1, TimeUnit.MINUTES)) break;
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new RuntimeException(e);
             }
             logger.debug("Completing tasks . . . (elapsed {} minutes)", ++minutes);

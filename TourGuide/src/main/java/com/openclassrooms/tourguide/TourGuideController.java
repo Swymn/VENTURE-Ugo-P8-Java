@@ -1,10 +1,8 @@
 package com.openclassrooms.tourguide;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,42 +20,32 @@ public class TourGuideController {
 
     private final TourGuideService tourGuideService;
 
-    @Autowired
     public TourGuideController(final TourGuideService tourGuideService) {
         this.tourGuideService = tourGuideService;
     }
 
-    @RequestMapping("/")
+    @GetMapping("/")
     public String index() {
         return "Greetings from TourGuide!";
     }
     
-    @RequestMapping("/getLocation") 
+    @GetMapping("/getLocation") 
     public VisitedLocation getLocation(@RequestParam final String userName) {
     	return tourGuideService.getUserLocation(getUser(userName));
     }
     
-    //  TODO: Change this method to no longer return a List of Attractions.
- 	//  Instead: Get the closest five tourist attractions to the user - no matter how far away they are.
- 	//  Return a new JSON object that contains:
-    	// Name of Tourist attraction, 
-        // Tourist attractions lat/long, 
-        // The user's location lat/long, 
-        // The distance in miles between the user's location and each of the attractions.
-        // The reward points for visiting each Attraction.
-        //    Note: Attraction reward points can be gathered from RewardsCentral
-    @RequestMapping("/getNearbyAttractions") 
+    @GetMapping("/getNearbyAttractions") 
     public List<Attraction> getNearbyAttractions(@RequestParam final String userName) {
-    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
-    	return Collections.emptyList();
+    	var visitedLocation = tourGuideService.getUserLocation(getUser(userName));
+        return tourGuideService.getNearByAttractions(visitedLocation);
     }
     
-    @RequestMapping("/getRewards") 
+    @GetMapping("/getRewards") 
     public List<UserReward> getRewards(@RequestParam final String userName) {
     	return tourGuideService.getUserRewards(getUser(userName));
     }
        
-    @RequestMapping("/getTripDeals")
+    @GetMapping("/getTripDeals")
     public List<Provider> getTripDeals(@RequestParam final String userName) {
     	return tourGuideService.getTripDeals(getUser(userName));
     }
